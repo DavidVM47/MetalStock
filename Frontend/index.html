@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetalStock</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="contenedor">
+        <h1>🔥 MetalStock</h1>
+        <p>Gestión de Inventario de Taller</p>
+
+        <div class="caja-formulario">
+            <input type="text" id="nombre" placeholder="Nombre del material (Ej: Ángulo 2 pulg)">
+            <input type="number" id="cantidad" placeholder="Cantidad">
+            <select id="unidad">
+                <option value="Unidades">Unidades</option>
+                <option value="Metros">Metros</option>
+                <option value="Cajas">Cajas</option>
+                <option value="Kg">Kg</option>
+            </select>
+            <button onclick="guardarMaterial()">Agregar al Inventario</button>
+        </div>
+
+        <table id="tabla-inventario">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Material</th>
+                    <th>Stock</th>
+                    <th>Unidad</th>
+                </tr>
+            </thead>
+            <tbody id="lista-materiales">
+                </tbody>
+        </table>
+    </div>
+
+    <script src="main.js"></script>
+</body>
+</html>
