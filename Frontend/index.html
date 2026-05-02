@@ -2,44 +2,55 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <title>MetalStock Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetalStock v2.0</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <h1>MetalStock: Gestión de Taller</h1>
+    <h1>🔥 MetalStock</h1>
     
-    <div style="display: flex; gap: 20px; flex-wrap: wrap;">
-        <div class="card" style="flex: 1; min-width: 300px;">
-            <h2>📦 Inventario Global</h2>
-            <input type="text" id="mNombre" placeholder="Nombre Material">
-            <div style="display: flex; gap: 5px;">
-                <input type="number" id="mCant" placeholder="Cant." min="1">
-                <select id="mUnidad">
-                    <option value="Metros">Metros</option>
-                    <option value="Und">Unidades</option>
-                    <option value="Kg">Kg</option>
-                    <option value="Gal">Galones</option>
-                </select>
+    <div class="container">
+        <div class="card">
+            <h2>📦 Inventario General</h2>
+            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+                <input type="text" id="mNombre" placeholder="Nombre del material">
+                <div style="display: flex; gap: 10px;">
+                    <input type="number" id="mCant" placeholder="Cantidad">
+                    <select id="mUnidad">
+                        <option value="Metros">Metros</option>
+                        <option value="Und">Unidades</option>
+                        <option value="Kg">Kg</option>
+                        <option value="Gal">Galones</option>
+                    </select>
+                </div>
+                <button class="btn-add" onclick="guardarMat()">+ Crear Nuevo Material</button>
             </div>
-            <button onclick="guardarMat()">Guardar en Stock</button>
-            <table id="tablaMat" style="width: 100%; margin-top: 20px;"></table>
+            
+            <table id="tablaMat">
+                </table>
         </div>
 
-        <div class="card" style="flex: 1; min-width: 300px;">
-            <h2>👥 Clientes y Trabajos</h2>
-            <input type="text" id="cNombre" placeholder="Nombre Cliente">
-            <input type="text" id="cTrabajo" placeholder="Trabajo (Ej: Reja)">
-            <button onclick="guardarCli()">Registrar Proyecto</button>
-            <hr>
-            <h3>Asignar Material</h3>
+        <div class="card">
+            <h2>🛠️ Asignar a Proyecto</h2>
+            <input type="text" id="cNombre" placeholder="Cliente / Proyecto">
+            <input type="text" id="cTrabajo" placeholder="Descripción (Ej: Reja)">
+            <button class="btn-add" style="background:#34495e" onclick="guardarCli()">Registrar Cliente</button>
+            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
+            
+            <h3>Salida de Material</h3>
+            <label>Seleccionar Cliente:</label>
             <select id="selectCli" onchange="verHistorial()"></select>
+            <label>Material:</label>
             <select id="selectMat"></select>
-            <input type="number" id="vCant" placeholder="Cantidad a usar" min="0.1" step="0.1">
-            <button onclick="vincular()" style="background-color: #27ae60;">Asignar al Cliente</button>
+            <input type="number" id="vCant" placeholder="Cantidad a usar">
+            <button class="btn-assign" onclick="vincular()">Descontar e Inscribir</button>
         </div>
 
-        <div class="card" style="flex: 1; min-width: 300px; border-top: 5px solid #e67e22;">
-            <h2>📋 Detalle por Cliente</h2>
+        <div class="card" style="border-top-color: #3498db;">
+            <h2>📈 Movimientos Recientes</h2>
+            <div id="movimientosGlobales" style="margin-bottom: 25px;"></div>
+            
+            <h2 style="border-top: 1px solid #eee; padding-top: 20px;">📋 Detalle Cliente</h2>
             <div id="historialCliente"></div>
         </div>
     </div>
@@ -47,112 +58,181 @@
     <script>
         const API = "http://localhost:5000/api";
 
-        async function cargarTodo() {
-            const resM = await fetch(`${API}/materiales`);
-            const materiales = await resM.json();
-            const t = document.getElementById('tablaMat');
-            const sM = document.getElementById('selectMat');
-            t.innerHTML = "<tr><th>Material</th><th>Stock</th></tr>";
-            sM.innerHTML = "";
-            materiales.forEach(m => {
-                t.innerHTML += `<tr><td>${m.nombre}</td><td>${m.cantidad} ${m.unidad}</td></tr>`;
-                sM.innerHTML += `<option value="${m.id}">${m.nombre} (Stock: ${m.cantidad})</option>`;
-            });
-
-            const resC = await fetch(`${API}/clientes`);
-            const clientes = await resC.json();
-            const sC = document.getElementById('selectCli');
-            sC.innerHTML = "<option value=''>-- Seleccionar Cliente --</option>";
-            clientes.forEach(c => {
-                sC.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
-            });
+        // Cargar inventario y llenar selects
+        async function cargarInventario() {
+            try {
+                const res = await fetch(`${API}/materiales`);
+                const data = await res.json();
+                const t = document.getElementById('tablaMat');
+                const sM = document.getElementById('selectMat');
+                
+                t.innerHTML = "<tr><th>Material</th><th>Stock</th><th>Ajuste</th></tr>";
+                sM.innerHTML = "";
+                
+                data.forEach(m => {
+                    t.innerHTML += `
+                        <tr>
+                            <td><strong>${m.nombre}</strong><br><small>${m.unidad}</small></td>
+                            <td><span class="badge">${m.cantidad}</span></td>
+                            <td>
+                                <button class="btn-sm" onclick="ajustar(${m.id}, 1)">+</button>
+                                <button class="btn-sm" onclick="ajustar(${m.id}, -1)">-</button>
+                            </td>
+                        </tr>`;
+                    sM.innerHTML += `<option value="${m.id}">${m.nombre} (Stock: ${m.cantidad})</option>`;
+                });
+            } catch (e) { console.error("Error cargando materiales:", e); }
         }
 
-        async function guardarMat() {
-            const nombre = document.getElementById('mNombre').value;
-            const cantidad = document.getElementById('mCant').value;
-            
-            if(cantidad <= 0) return alert("Error: La cantidad debe ser mayor a 0");
+        // Cargar clientes
+        async function cargarClientes() {
+            try {
+                const res = await fetch(`${API}/clientes`);
+                const data = await res.json();
+                const sC = document.getElementById('selectCli');
+                sC.innerHTML = "<option value=''>-- Seleccionar Cliente --</option>";
+                data.forEach(c => {
+                    sC.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
+                });
+            } catch (e) { console.error("Error cargando clientes:", e); }
+        }
 
+        // Historial de los últimos 5 movimientos
+        async function cargarHistorialGlobal() {
+            try {
+                const res = await fetch(`${API}/historial_global`);
+                const data = await res.json();
+                const div = document.getElementById('movimientosGlobales');
+                div.innerHTML = data.length ? "" : "<p>No hay movimientos.</p>";
+                data.forEach(m => {
+                    div.innerHTML += `
+                        <div class="history-item">
+                            <strong>${m.cliente}</strong> usó <b>${m.cantidad_gastada}</b> de <i>${m.material_nombre}</i>
+                        </div>`;
+                });
+            } catch (e) { console.error("Error historial:", e); }
+        }
+
+        // Botones rápidos + / -
+        async function ajustar(id, valor) {
+            try {
+                const response = await fetch(`${API}/materiales/ajuste`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ material_id: id, cambio: valor })
+                });
+                
+                if (response.ok) {
+                    cargarInventario(); // Recarga la tabla para ver el cambio
+                } else {
+                    const errorData = await response.json();
+                    alert("Error al ajustar: " + errorData.error);
+                }
+            } catch (error) {
+                console.error("Error de conexión:", error);
+                alert("No se pudo conectar con el servidor. ¿Asegúrate de que app.py esté corriendo?");
+            }
+        }
+
+        // Guardar nuevo material
+        async function guardarMat() {
+            const n = document.getElementById('mNombre').value;
+            const c = document.getElementById('mCant').value;
+            if(!n || c <= 0) return alert("Ingresa nombre y cantidad válida");
+            
             await fetch(`${API}/materiales`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    nombre: nombre,
-                    cantidad: cantidad,
+                    nombre: n, 
+                    cantidad: c, 
                     unidad: document.getElementById('mUnidad').value
                 })
             });
-            cargarTodo();
+            document.getElementById('mNombre').value = "";
+            document.getElementById('mCant').value = "";
+            cargarInventario();
         }
 
+        // Guardar nuevo cliente
         async function guardarCli() {
+            const n = document.getElementById('cNombre').value;
+            if(!n) return alert("Nombre de cliente obligatorio");
+            
             await fetch(`${API}/clientes`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({
-                    nombre: document.getElementById('cNombre').value,
+                    nombre: n,
                     trabajo: document.getElementById('cTrabajo').value
                 })
             });
-            cargarTodo();
+            document.getElementById('cNombre').value = "";
+            document.getElementById('cTrabajo').value = "";
+            cargarClientes();
         }
 
+        // Vincular material a cliente (Gastar stock)
         async function vincular() {
-            const clienteId = document.getElementById('selectCli').value;
-            const cantidad = document.getElementById('vCant').value;
+            const cId = document.getElementById('selectCli').value;
+            const mId = document.getElementById('selectMat').value;
+            const cant = document.getElementById('vCant').value;
             
-            if(!clienteId) return alert("Selecciona un cliente primero");
-            if(cantidad <= 0) return alert("Error: No puedes asignar cantidades negativas o cero");
+            if(!cId || !mId || cant <= 0) return alert("Selecciona cliente, material y cantidad mayor a 0");
 
-            const response = await fetch(`${API}/vincular`, {
+            const res = await fetch(`${API}/vincular`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    cliente_id: clienteId,
-                    material_id: document.getElementById('selectMat').value,
-                    cantidad: cantidad
-                })
+                body: JSON.stringify({ cliente_id: cId, material_id: mId, cantidad: cant })
             });
 
-            if (!response.ok) {
-                const err = await response.json();
-                alert(err.error); // Esto mostrará el error de "Stock insuficiente" del backend
+            if(!res.ok) {
+                const err = await res.json();
+                alert("Error: " + err.error);
+            } else {
+                document.getElementById('vCant').value = "";
+                cargarInventario();
+                cargarHistorialGlobal();
+                verHistorial();
             }
-
-            cargarTodo();
-            verHistorial();
         }
 
+        // Ver detalle de un cliente específico
         async function verHistorial() {
-            const clienteId = document.getElementById('selectCli').value;
+            const id = document.getElementById('selectCli').value;
             const div = document.getElementById('historialCliente');
-            if(!clienteId) { div.innerHTML = ""; return; }
-
-            const res = await fetch(`${API}/reporte/${clienteId}`);
+            if(!id) { div.innerHTML = ""; return; }
+            
+            const res = await fetch(`${API}/reporte/${id}`);
             const data = await res.json();
             div.innerHTML = "<ul>";
-            data.forEach(item => {
+            data.forEach(i => {
                 div.innerHTML += `
-                    <li style="margin-bottom:10px;">
-                        ${item.cantidad_gastada} - ${item.material_nombre} 
-                        <button onclick="desvincular(${item.id})" style="width:auto; padding:2px 10px; background:red; font-size:12px;">Quitar</button>
+                    <li style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;">
+                        <span>${i.cantidad_gastada} - ${i.material_nombre}</span>
+                        <button class="btn-sm" style="background:red; color:white; border-radius:4px;" onclick="desvincular(${i.id})">Quitar</button>
                     </li>`;
             });
             div.innerHTML += "</ul>";
         }
 
-        async function desvincular(idConsumo) {
+        // Devolver material al stock
+        async function desvincular(id) {
+            if(!confirm("¿Devolver este material al inventario?")) return;
             await fetch(`${API}/desvincular`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ consumo_id: idConsumo })
+                body: JSON.stringify({ consumo_id: id })
             });
-            cargarTodo();
+            cargarInventario();
+            cargarHistorialGlobal();
             verHistorial();
         }
 
-        cargarTodo();
+        // Inicialización
+        cargarInventario();
+        cargarClientes();
+        cargarHistorialGlobal();
     </script>
 </body>
 </html>
