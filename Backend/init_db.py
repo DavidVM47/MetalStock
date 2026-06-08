@@ -1,85 +1,58 @@
-from flask import Flask, jsonify, request
-from flask_cors import CORS
-import sqlite3
+import psycopg2
 
-app = Flask(__name__)
-CORS(app)
+def inicializar_base_de_datos():
+    try:
+        # Conexión orientada a la nueva base de datos para Python
+        conn = psycopg2.connect(
+            host="localhost",
+            database="metalstock_python", # <--- Base de datos independiente
+            user="postgres",
+            password="admin",      # <--- COLOCA AQUÍ TU CONTRASEÑA DE POSTGRES
+            port="5432"
+        )
+        cursor = conn.cursor()
 
-def db_conexion():
-    conn = sqlite3.connect('metalstock.db')
-    conn.row_factory = sqlite3.Row
-    return conn
+        print("Creando tablas en PostgreSQL (Base de datos: metalstock_python)...")
 
-@app.route('/api/materiales', methods=['GET', 'POST'])
-def gestionar_materiales():
-    conn = db_conexion()
-    if request.method == 'GET':
-        items = conn.execute('SELECT * FROM materiales').fetchall()
-        return jsonify([dict(i) for i in items])
-    
-    nuevo = request.get_json()
-    # VALIDACIÓN: Cantidad no negativa al crear
-    if float(nuevo['cantidad']) <= 0:
-        return jsonify({'error': 'La cantidad debe ser mayor a 0'}), 400
+        # 1. Tabla de Materiales
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS materiales (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(255) NOT NULL,
+                cantidad REAL NOT NULL DEFAULT 0.0,
+                unidad VARCHAR(50) NOT NULL
+            )
+        ''')
 
-    conn.execute('INSERT INTO materiales (nombre, cantidad, unidad) VALUES (?, ?, ?)',
-                 (nuevo['nombre'], nuevo['cantidad'], nuevo['unidad']))
-    conn.commit()
-    return jsonify({'msj': 'ok'})
+        # 2. Tabla de Clientes
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS clientes (
+                id SERIAL PRIMARY KEY,
+                nombre VARCHAR(255) NOT NULL,
+                trabajo VARCHAR(255) NOT NULL
+            )
+        ''')
 
-@app.route('/api/clientes', methods=['GET', 'POST'])
-def gestionar_clientes():
-    conn = db_conexion()
-    if request.method == 'GET':
-        items = conn.execute('SELECT * FROM clientes').fetchall()
-        return jsonify([dict(i) for i in items])
-    nuevo = request.get_json()
-    conn.execute('INSERT INTO clientes (nombre, trabajo) VALUES (?, ?)',
-                 (nuevo['nombre'], nuevo['trabajo']))
-    conn.commit()
-    return jsonify({'msj': 'ok'})
+        # 3. Tabla de Historial
+        cursor.execute('''
+            CREATE TABLE IF NOT EXISTS consumo_proyectos (
+                id SERIAL PRIMARY KEY,
+                cliente_id INTEGER,
+                material_id INTEGER,
+                material_nombre VARCHAR(255) NOT NULL,
+                cantidad_gastada REAL NOT NULL,
+                FOREIGN KEY (cliente_id) REFERENCES clientes (id) ON DELETE CASCADE,
+                FOREIGN KEY (material_id) REFERENCES materiales (id) ON DELETE SET NULL
+            )
+        ''')
 
-@app.route('/api/vincular', methods=['POST'])
-def vincular_material():
-    datos = request.get_json()
-    cantidad_a_usar = float(datos['cantidad'])
-    
-    # VALIDACIÓN 1: No permitir negativos
-    if cantidad_a_usar <= 0:
-        return jsonify({'error': 'La cantidad debe ser mayor a cero'}), 400
-    
-    conn = db_conexion()
-    mat = conn.execute('SELECT * FROM materiales WHERE id = ?', (datos['material_id'],)).fetchone()
-    
-    # VALIDACIÓN 2: No permitir gastar más de lo que hay
-    if mat['cantidad'] < cantidad_a_usar:
-        return jsonify({'error': f'Stock insuficiente. Solo quedan {mat["cantidad"]}'}), 400
-
-    # Si pasa las validaciones, procedemos
-    conn.execute('UPDATE materiales SET cantidad = cantidad - ? WHERE id = ?',
-                 (cantidad_a_usar, datos['material_id']))
-    conn.execute('INSERT INTO consumo_proyectos (cliente_id, material_id, material_nombre, cantidad_gastada) VALUES (?, ?, ?, ?)',
-                 (datos['cliente_id'], datos['material_id'], mat['nombre'], cantidad_a_usar))
-    conn.commit()
-    return jsonify({'msj': 'ok'})
-
-@app.route('/api/desvincular', methods=['POST'])
-def desvincular_material():
-    datos = request.get_json()
-    conn = db_conexion()
-    consumo = conn.execute('SELECT * FROM consumo_proyectos WHERE id = ?', (datos['consumo_id'],)).fetchone()
-    if consumo:
-        conn.execute('UPDATE materiales SET cantidad = cantidad + ? WHERE id = ?',
-                     (consumo['cantidad_gastada'], consumo['material_id']))
-        conn.execute('DELETE FROM consumo_proyectos WHERE id = ?', (datos['consumo_id'],))
         conn.commit()
-    return jsonify({'msj': 'ok'})
+        cursor.close()
+        conn.close()
+        print("¡Base de datos en PostgreSQL inicializada con éxito!")
 
-@app.route('/api/reporte/<int:cliente_id>', methods=['GET'])
-def ver_reporte(cliente_id):
-    conn = db_conexion()
-    reporte = conn.execute('SELECT * FROM consumo_proyectos WHERE cliente_id = ?', (cliente_id,)).fetchall()
-    return jsonify([dict(r) for r in reporte])
+    except Exception as e:
+        print(f"Error al conectar o inicializar PostgreSQL: {e}")
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000)
+    inicializar_base_de_datos()

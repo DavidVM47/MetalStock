@@ -3,236 +3,521 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MetalStock v2.0</title>
-    <link rel="stylesheet" href="style.css">
+    <title>MetalStock Pro - Control de Inventario</title>
+    <style>
+        /* Variables de Entorno para Colores Modernos */
+        :root {
+            --bg-principal: #f3f4f6;
+            --bg-card: #ffffff;
+            --texto-dark: #1f2937;
+            --texto-light: #4b5563;
+            --primary: #3b82f6; /* Azul moderno */
+            --primary-hover: #2563eb;
+            --success: #10b981; /* Verde esmeralda */
+            --success-hover: #059669;
+            --warning: #f59e0b; /* Ámbar naranja */
+            --warning-hover: #d97706;
+            --danger: #ef4444; /* Rojo coral */
+            --danger-hover: #dc2626;
+            --borde: #e5e7eb;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-principal);
+            margin: 0;
+            padding: 0;
+            color: var(--texto-dark);
+        }
+
+        /* Barra de Navegación superior */
+        header {
+            background-color: #1e293b;
+            color: white;
+            padding: 15px 30px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.4rem;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        header .badge {
+            background-color: var(--primary);
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            border-radius: 12px;
+        }
+
+        /* Contenedor Principal en Grid Flexible */
+        .container {
+            max-width: 1400px;
+            margin: 30px auto;
+            padding: 0 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
+        }
+
+        /* Tarjetas Estilo Dashboard */
+        .column {
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border: 1px solid var(--borde);
+            transition: transform 0.2s ease;
+        }
+
+        .column:hover {
+            transform: translateY(-2px);
+        }
+
+        h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: var(--texto-dark);
+            margin-top: 0;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid var(--bg-principal);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .seccion-interna {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px dashed var(--borde);
+        }
+
+        /* Inputs y Selects Estilizados */
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 500;
+            color: var(--texto-light);
+            margin-bottom: 6px;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 10px 14px;
+            margin-bottom: 16px;
+            border: 1px solid var(--borde);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background-color: #f9fafb;
+            color: var(--texto-dark);
+            box-sizing: border-box;
+            transition: all 0.2s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: #fff;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Botones Amigables */
+        button {
+            width: 100%;
+            padding: 11px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-blue { background-color: var(--primary); color: white; }
+        .btn-blue:hover { background-color: var(--primary-hover); }
+
+        .btn-orange { background-color: var(--warning); color: white; }
+        .btn-orange:hover { background-color: var(--warning-hover); }
+
+        .btn-red { background-color: var(--danger); color: white; }
+        .btn-red:hover { background-color: var(--danger-hover); }
+
+        /* Estilo de Tablas Modernas */
+        .table-container {
+            overflow-x: auto;
+            margin-top: 15px;
+            border-radius: 8px;
+            border: 1px solid var(--borde);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            font-size: 0.88rem;
+        }
+
+        th {
+            background-color: #f8fafc;
+            color: var(--texto-light);
+            font-weight: 600;
+            padding: 12px;
+            text-align: left;
+            border-bottom: 2px solid var(--borde);
+        }
+
+        td {
+            padding: 12px;
+            border-bottom: 1px solid var(--borde);
+            color: var(--texto-dark);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background-color: #f8fafc;
+        }
+
+        /* Botones miniatura dentro de las tablas */
+        .btn-group {
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-small {
+            width: auto;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+            border-radius: 6px;
+        }
+
+        .btn-danger-light {
+            background-color: #fee2e2;
+            color: var(--danger);
+        }
+        .btn-danger-light:hover {
+            background-color: var(--danger);
+            color: white;
+        }
+
+        /* Alertas o textos vacíos */
+        .nulo {
+            color: #9ca3af;
+            font-style: italic;
+        }
+    </style>
 </head>
 <body>
-    <h1>🔥 MetalStock</h1>
+
+<header>
+    <h1>⚙️ MetalStock <span class="badge">v2.1</span></h1>
+    <span style="font-size: 0.9rem; color: #94a3b8;">Taller & Inventario</span>
+</header>
+
+<div class="container">
     
-    <div class="container">
-        <div class="card">
-            <h2>📦 Inventario General</h2>
-            <div style="background: #f9f9f9; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-                <input type="text" id="mNombre" placeholder="Nombre del material">
-                <div style="display: flex; gap: 10px;">
-                    <input type="number" id="mCant" placeholder="Cantidad">
-                    <select id="mUnidad">
-                        <option value="Metros">Metros</option>
-                        <option value="Und">Unidades</option>
-                        <option value="Kg">Kg</option>
-                        <option value="Gal">Galones</option>
-                    </select>
-                </div>
-                <button class="btn-add" onclick="guardarMat()">+ Crear Nuevo Material</button>
-            </div>
-            
-            <table id="tablaMat">
-                </table>
-        </div>
+    <div class="column">
+        <h2>📦 Bodega de Materiales</h2>
+        
+        <label>Nombre del Material</label>
+        <input type="text" id="nombreMaterial" placeholder="Ej. Tubo Galvanizado 2x2">
+        
+        <label>Cantidad Inicial</label>
+        <input type="number" id="cantidadInicial" placeholder="0.00" min="0" step="any">
+        
+        <label>Unidad de Medida</label>
+        <input type="text" id="unidadMaterial" placeholder="Ej. Metros, Unidades, Kg">
+        
+        <button class="btn-blue" onclick="guardarMaterial()">➕ Agregar Material</button>
 
-        <div class="card">
-            <h2>🛠️ Asignar a Proyecto</h2>
-            <input type="text" id="cNombre" placeholder="Cliente / Proyecto">
-            <input type="text" id="cTrabajo" placeholder="Descripción (Ej: Reja)">
-            <button class="btn-add" style="background:#34495e" onclick="guardarCli()">Registrar Cliente</button>
-            <hr style="margin: 20px 0; border: 0; border-top: 1px solid #eee;">
-            
-            <h3>Salida de Material</h3>
-            <label>Seleccionar Cliente:</label>
-            <select id="selectCli" onchange="verHistorial()"></select>
-            <label>Material:</label>
-            <select id="selectMat"></select>
-            <input type="number" id="vCant" placeholder="Cantidad a usar">
-            <button class="btn-assign" onclick="vincular()">Descontar e Inscribir</button>
-        </div>
-
-        <div class="card" style="border-top-color: #3498db;">
-            <h2>📈 Movimientos Recientes</h2>
-            <div id="movimientosGlobales" style="margin-bottom: 25px;"></div>
-            
-            <h2 style="border-top: 1px solid #eee; padding-top: 20px;">📋 Detalle Cliente</h2>
-            <div id="historialCliente"></div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Material</th>
+                        <th>Stock</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaMateriales"></tbody>
+            </table>
         </div>
     </div>
 
-    <script>
-        const API = "http://localhost:5000/api";
+    <div class="column">
+        <h2>👥 Clientes y Proyectos</h2>
+        
+        <label>Nombre del Cliente</label>
+        <input type="text" id="nombreCliente" placeholder="Ej. Juan Pérez">
+        
+        <label>Trabajo / Obra</label>
+        <input type="text" id="trabajoCliente" placeholder="Ej. Estructura Techo">
+        
+        <button class="btn-blue" onclick="registrarCliente()">💾 Registrar Cliente</button>
 
-        // Cargar inventario y llenar selects
-        async function cargarInventario() {
-            try {
-                const res = await fetch(`${API}/materiales`);
-                const data = await res.json();
-                const t = document.getElementById('tablaMat');
-                const sM = document.getElementById('selectMat');
-                
-                t.innerHTML = "<tr><th>Material</th><th>Stock</th><th>Ajuste</th></tr>";
-                sM.innerHTML = "";
-                
-                data.forEach(m => {
-                    t.innerHTML += `
-                        <tr>
-                            <td><strong>${m.nombre}</strong><br><small>${m.unidad}</small></td>
-                            <td><span class="badge">${m.cantidad}</span></td>
-                            <td>
-                                <button class="btn-sm" onclick="ajustar(${m.id}, 1)">+</button>
-                                <button class="btn-sm" onclick="ajustar(${m.id}, -1)">-</button>
-                            </td>
-                        </tr>`;
-                    sM.innerHTML += `<option value="${m.id}">${m.nombre} (Stock: ${m.cantidad})</option>`;
-                });
-            } catch (e) { console.error("Error cargando materiales:", e); }
-        }
-
-        // Cargar clientes
-        async function cargarClientes() {
-            try {
-                const res = await fetch(`${API}/clientes`);
-                const data = await res.json();
-                const sC = document.getElementById('selectCli');
-                sC.innerHTML = "<option value=''>-- Seleccionar Cliente --</option>";
-                data.forEach(c => {
-                    sC.innerHTML += `<option value="${c.id}">${c.nombre}</option>`;
-                });
-            } catch (e) { console.error("Error cargando clientes:", e); }
-        }
-
-        // Historial de los últimos 5 movimientos
-        async function cargarHistorialGlobal() {
-            try {
-                const res = await fetch(`${API}/historial_global`);
-                const data = await res.json();
-                const div = document.getElementById('movimientosGlobales');
-                div.innerHTML = data.length ? "" : "<p>No hay movimientos.</p>";
-                data.forEach(m => {
-                    div.innerHTML += `
-                        <div class="history-item">
-                            <strong>${m.cliente}</strong> usó <b>${m.cantidad_gastada}</b> de <i>${m.material_nombre}</i>
-                        </div>`;
-                });
-            } catch (e) { console.error("Error historial:", e); }
-        }
-
-        // Botones rápidos + / -
-        async function ajustar(id, valor) {
-            try {
-                const response = await fetch(`${API}/materiales/ajuste`, {
-                    method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
-                    body: JSON.stringify({ material_id: id, cambio: valor })
-                });
-                
-                if (response.ok) {
-                    cargarInventario(); // Recarga la tabla para ver el cambio
-                } else {
-                    const errorData = await response.json();
-                    alert("Error al ajustar: " + errorData.error);
-                }
-            } catch (error) {
-                console.error("Error de conexión:", error);
-                alert("No se pudo conectar con el servidor. ¿Asegúrate de que app.py esté corriendo?");
-            }
-        }
-
-        // Guardar nuevo material
-        async function guardarMat() {
-            const n = document.getElementById('mNombre').value;
-            const c = document.getElementById('mCant').value;
-            if(!n || c <= 0) return alert("Ingresa nombre y cantidad válida");
+        <div class="seccion-interna">
+            <h2>🛠️ Registrar Consumo</h2>
             
-            await fetch(`${API}/materiales`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    nombre: n, 
-                    cantidad: c, 
-                    unidad: document.getElementById('mUnidad').value
-                })
-            });
-            document.getElementById('mNombre').value = "";
-            document.getElementById('mCant').value = "";
-            cargarInventario();
-        }
+            <label>Seleccionar Cliente</label>
+            <select id="selectClienteConsumo">
+                <option value="">-- Seleccione un cliente --</option>
+            </select>
+            <button class="btn-red btn-small" style="margin-bottom: 15px; font-size: 0.75rem;" onclick="borrarClienteSeleccionado()">❌ Eliminar Cliente Seleccionado</button>
 
-        // Guardar nuevo cliente
-        async function guardarCli() {
-            const n = document.getElementById('cNombre').value;
-            if(!n) return alert("Nombre de cliente obligatorio");
+            <label>Material Utilizado</label>
+            <select id="selectMaterialConsumo">
+                <option value="">-- Seleccione un material --</option>
+            </select>
             
-            await fetch(`${API}/clientes`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({
-                    nombre: n,
-                    trabajo: document.getElementById('cTrabajo').value
-                })
-            });
-            document.getElementById('cNombre').value = "";
-            document.getElementById('cTrabajo').value = "";
-            cargarClientes();
-        }
-
-        // Vincular material a cliente (Gastar stock)
-        async function vincular() {
-            const cId = document.getElementById('selectCli').value;
-            const mId = document.getElementById('selectMat').value;
-            const cant = document.getElementById('vCant').value;
+            <label>Cantidad a Descontar</label>
+            <input type="number" id="cantidadConsumo" placeholder="0.00" min="0" step="any">
             
-            if(!cId || !mId || cant <= 0) return alert("Selecciona cliente, material y cantidad mayor a 0");
+            <button class="btn-orange" onclick="vincularConsumo()">⚙️ Vincular e Inyectar al Historial</button>
+        </div>
+    </div>
 
-            const res = await fetch(`${API}/vincular`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ cliente_id: cId, material_id: mId, cantidad: cant })
-            });
+    <div class="column">
+        <h2>
+            📜 Historial de Salidas
+            <button class="btn-red btn-small" style="width: auto;" onclick="vaciarHistorialCompleto()">🗑️ Vaciar Todo</button>
+        </h2>
+        
+        <p style="font-size: 0.8rem; color: var(--texto-light); margin-top: -10px; margin-bottom: 15px;">
+            Haga clic en la ❌ de una fila para revertir o limpiar registros individuales.
+        </p>
 
-            if(!res.ok) {
-                const err = await res.json();
-                alert("Error: " + err.error);
-            } else {
-                document.getElementById('vCant').value = "";
-                cargarInventario();
-                cargarHistorialGlobal();
-                verHistorial();
-            }
-        }
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Material</th>
+                        <th>Cant.</th>
+                        <th>Limpiar</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaHistorial"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
-        // Ver detalle de un cliente específico
-        async function verHistorial() {
-            const id = document.getElementById('selectCli').value;
-            const div = document.getElementById('historialCliente');
-            if(!id) { div.innerHTML = ""; return; }
-            
-            const res = await fetch(`${API}/reporte/${id}`);
-            const data = await res.json();
-            div.innerHTML = "<ul>";
-            data.forEach(i => {
-                div.innerHTML += `
-                    <li style="display:flex; justify-content:space-between; margin-bottom:5px; font-size:13px;">
-                        <span>${i.cantidad_gastada} - ${i.material_nombre}</span>
-                        <button class="btn-sm" style="background:red; color:white; border-radius:4px;" onclick="desvincular(${i.id})">Quitar</button>
-                    </li>`;
-            });
-            div.innerHTML += "</ul>";
-        }
+<script>
+    let materialesGlobal = [];
+    let clientesGlobal = [];
 
-        // Devolver material al stock
-        async function desvincular(id) {
-            if(!confirm("¿Devolver este material al inventario?")) return;
-            await fetch(`${API}/desvincular`, {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify({ consumo_id: id })
-            });
-            cargarInventario();
-            cargarHistorialGlobal();
-            verHistorial();
-        }
-
-        // Inicialización
-        cargarInventario();
+    document.addEventListener("DOMContentLoaded", () => {
+        cargarMateriales();
         cargarClientes();
-        cargarHistorialGlobal();
-    </script>
+        cargarHistorial();
+    });
+
+    async function cargarMateriales() {
+        const response = await fetch('/api/materiales');
+        materialesGlobal = await response.json();
+        
+        const tabla = document.getElementById('tablaMateriales');
+        const select = document.getElementById('selectMaterialConsumo');
+        tabla.innerHTML = '';
+        select.innerHTML = '<option value="">-- Seleccione un material --</option>';
+
+        materialesGlobal.forEach(m => {
+            tabla.innerHTML += `
+                <tr>
+                    <td><b>${m.nombre}</b></td>
+                    <td>${m.cantidad} <span style="color:var(--texto-light); font-size:0.75rem;">${m.unidad}</span></td>
+                    <td class="btn-group">
+                        <button class="btn-red btn-small" onclick="ajustarStock(${m.id}, -1)">-</button>
+                        <button class="btn-blue btn-small" onclick="ajustarStock(${m.id}, 1)">+</button>
+                        <button class="btn-danger-light btn-small" onclick="eliminarMaterial(${m.id})" title="Eliminar de bodega">✕</button>
+                    </td>
+                </tr>
+            `;
+            select.innerHTML += `<option value="${m.id}">${m.nombre} (${m.cantidad} disp.)</option>`;
+        });
+    }
+
+    async function guardarMaterial() {
+        const nombre = document.getElementById('nombreMaterial').value;
+        const cantidad = parseFloat(document.getElementById('cantidadInicial').value);
+        const unidad = document.getElementById('unidadMaterial').value;
+
+        if(!nombre || isNaN(cantidad) || cantidad < 0 || !unidad) { 
+            alert("Completa todos los campos de material con valores válidos (no negativos)."); 
+            return; 
+        }
+
+        const material = { nombre, cantidad, unidad };
+
+        await fetch('/api/materiales', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(material)
+        });
+
+        document.getElementById('nombreMaterial').value = '';
+        document.getElementById('cantidadInicial').value = '';
+        document.getElementById('unidadMaterial').value = '';
+        cargarMateriales();
+    }
+
+    // FIX: Validación de stock negativo integrada aquí
+    async function ajustarStock(id, ajuste) {
+        const material = materialesGlobal.find(m => m.id === id);
+        
+        if (material) {
+            const nuevoStock = material.cantidad + ajuste;
+            
+            if (nuevoStock < 0) {
+                alert("Operación cancelada: No puedes dejar el stock en números negativos.");
+                return;
+            }
+        }
+
+        await fetch(`/api/materiales/${id}/stock?ajuste=${ajuste}`, { method: 'PUT' });
+        cargarMateriales();
+    }
+
+    async function eliminarMaterial(id) {
+        if (confirm("¿Deseas eliminar este material permanentemente de la bodega?")) {
+            await fetch(`/api/materiales/${id}`, { method: 'DELETE' });
+            cargarMateriales();
+        }
+    }
+
+    async function cargarClientes() {
+        const response = await fetch('/api/clientes');
+        clientesGlobal = await response.json();
+        
+        const select = document.getElementById('selectClienteConsumo');
+        select.innerHTML = '<option value="">-- Seleccione un cliente --</option>';
+
+        clientesGlobal.forEach(c => {
+            select.innerHTML += `<option value="${c.id}">${c.nombre} [${c.trabajo}]</option>`;
+        });
+    }
+
+    async function registrarCliente() {
+        const nombre = document.getElementById('nombreCliente').value;
+        const trabajo = document.getElementById('trabajoCliente').value;
+
+        if(!nombre || !trabajo) { alert("Completa los datos del cliente."); return; }
+
+        const cliente = { nombre, trabajo };
+
+        await fetch('/api/clientes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(cliente)
+        });
+
+        document.getElementById('nombreCliente').value = '';
+        document.getElementById('trabajoCliente').value = '';
+        cargarClientes();
+    }
+
+    async function borrarClienteSeleccionado() {
+        const idCliente = document.getElementById('selectClienteConsumo').value;
+        if (!idCliente) { alert("Por favor, selecciona un cliente de la lista primero."); return; }
+        
+        if (confirm("Al borrar este cliente se aplicará el borrado en cascada eliminando también su historial. ¿Continuar?")) {
+            await fetch(`/api/clientes/${idCliente}`, { method: 'DELETE' });
+            cargarClientes();
+            cargarHistorial(); 
+        }
+    }
+
+    async function vincularConsumo() {
+        const idCliente = document.getElementById('selectClienteConsumo').value;
+        const idMaterial = document.getElementById('selectMaterialConsumo').value;
+        const cantidadUsar = parseFloat(document.getElementById('cantidadConsumo').value);
+
+        if (!idCliente || !idMaterial || isNaN(cantidadUsar) || cantidadUsar <= 0) {
+            alert("Verifica los datos seleccionados y que la cantidad sea mayor a 0.");
+            return;
+        }
+
+        const materialSeleccionado = materialesGlobal.find(m => m.id == idMaterial);
+        if (materialSeleccionado && cantidadUsar > parseFloat(materialSeleccionado.cantidad)) {
+            alert("Error: Stock insuficiente en bodega para realizar el descuento.");
+            return; 
+        }
+
+        try {
+            const response = await fetch(`/api/consumos/registrar?clienteId=${idCliente}&materialId=${idMaterial}&cantidadUsada=${cantidadUsar}`, {
+                method: 'POST'
+            });
+
+            if (!response.ok) {
+                alert("Error en servidor: " + await response.text());
+                return;
+            }
+
+            document.getElementById('cantidadConsumo').value = '';
+            cargarMateriales(); 
+            cargarHistorial();  
+            
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    async function cargarHistorial() {
+        const response = await fetch('/api/consumos');
+        const consumos = await response.json();
+        
+        const tabla = document.getElementById('tablaHistorial');
+        tabla.innerHTML = '';
+
+        if(consumos.length === 0){
+            tabla.innerHTML = `<tr><td colspan="4" style="text-align:center; color:gray; padding:20px;">Historial vacío</td></tr>`;
+            return;
+        }
+
+        consumos.forEach(c => {
+            const nombreCliente = c.cliente ? c.cliente.nombre : '<span class="nulo">Nulo (Borrado)</span>';
+            const nombreMaterial = c.material ? c.material.nombre : '<span class="nulo">Nulo (Borrado)</span>';
+            
+            tabla.innerHTML += `
+                <tr>
+                    <td>${nombreCliente}</td>
+                    <td>${nombreMaterial}</td>
+                    <td><b>${c.cantidadUsada}</b></td>
+                    <td>
+                        <button class="btn-red btn-small btn-danger-light" onclick="eliminarRegistroHistorial(${c.id})">❌</button>
+                    </td>
+                </tr>
+            `;
+        });
+    }
+
+    async function eliminarRegistroHistorial(id) {
+        if (confirm("¿Remover esta línea del historial?")) {
+            await fetch(`/api/consumos/${id}`, { method: 'DELETE' });
+            cargarHistorial();
+        }
+    }
+
+    async function vaciarHistorialCompleto() {
+        if (confirm("¿Estás seguro de que deseas limpiar todo el historial de salidas? Esta acción no alterará el inventario ni tus clientes actuales.")) {
+            await fetch('/api/consumos/vaciar', { method: 'DELETE' });
+            cargarHistorial();
+        }
+    }
+</script>
 </body>
 </html>
