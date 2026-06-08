@@ -2,19 +2,19 @@ import psycopg2
 
 def inicializar_base_de_datos():
     try:
-        # Conexión orientada a la nueva base de datos para Python
+        
         conn = psycopg2.connect(
             host="localhost",
-            database="metalstock_python", # <--- Base de datos independiente
+            database="metalstock_python", 
             user="postgres",
-            password="admin",      # <--- COLOCA AQUÍ TU CONTRASEÑA DE POSTGRES
+            password="admin",      
             port="5432"
         )
         cursor = conn.cursor()
 
         print("Creando tablas en PostgreSQL (Base de datos: metalstock_python)...")
 
-        # 1. Tabla de Materiales
+        
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS materiales (
                 id SERIAL PRIMARY KEY,
@@ -24,7 +24,7 @@ def inicializar_base_de_datos():
             )
         ''')
 
-        # 2. Tabla de Clientes
+       
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS clientes (
                 id SERIAL PRIMARY KEY,
@@ -33,7 +33,7 @@ def inicializar_base_de_datos():
             )
         ''')
 
-        # 3. Tabla de Historial
+        
         cursor.execute('''
             CREATE TABLE IF NOT EXISTS consumo_proyectos (
                 id SERIAL PRIMARY KEY,

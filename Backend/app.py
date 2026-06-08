@@ -4,19 +4,18 @@ import psycopg2
 from psycopg2.extras import DictCursor
 import os
 
-# Localizamos automáticamente tu carpeta Frontend
 ruta_frontend = os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'Frontend'))
 
 app = Flask(__name__, static_folder=ruta_frontend, static_url_path='')
 CORS(app)
 
 def db_conexion():
-    # Conexión centralizada a la base de datos de Python
+    
     conn = psycopg2.connect(
         host="localhost",
-        database="metalstock_python", # <--- Conectado a la BD independiente
+        database="metalstock_python", 
         user="postgres",
-        password="admin",      # <--- COLOCA AQUÍ TU CONTRASEÑA DE POSTGRES
+        password="admin",      
         port="5432"
     )
     return conn
@@ -25,9 +24,7 @@ def db_conexion():
 def index():
     return app.send_static_file('index.html')
 
-# ==========================================
-# MATERIALES (BODEGA)
-# ==========================================
+
 @app.route('/api/materiales', methods=['GET', 'POST'])
 def gestionar_materiales():
     conn = db_conexion()
@@ -81,9 +78,7 @@ def ajustar_stock(id):
     conn.close()
     return jsonify({'msj': 'Stock actualizado'})
 
-# ==========================================
-# CLIENTES
-# ==========================================
+
 @app.route('/api/clientes', methods=['GET', 'POST'])
 def gestionar_clientes():
     conn = db_conexion()
@@ -108,7 +103,7 @@ def gestionar_clientes():
 def borrar_cliente(id):
     conn = db_conexion()
     cursor = conn.cursor()
-    # Borrado manual de consumos relacionados por seguridad
+
     cursor.execute('DELETE FROM consumo_proyectos WHERE cliente_id = %s', (id,))
     cursor.execute('DELETE FROM clientes WHERE id = %s', (id,))
     conn.commit()
@@ -116,9 +111,7 @@ def borrar_cliente(id):
     conn.close()
     return jsonify({'msj': 'Cliente y su historial borrados'})
 
-# ==========================================
-# CONSUMO E HISTORIAL
-# ==========================================
+
 @app.route('/api/consumos/registrar', methods=['POST'])
 def registrar_consumo():
     cliente_id = request.args.get('clienteId')

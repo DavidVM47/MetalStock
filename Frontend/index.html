@@ -5,19 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MetalStock Pro - Control de Inventario</title>
     <style>
-        /* Variables de Entorno para Colores Modernos */
+        
         :root {
             --bg-principal: #f3f4f6;
             --bg-card: #ffffff;
             --texto-dark: #1f2937;
             --texto-light: #4b5563;
-            --primary: #3b82f6; /* Azul moderno */
+            --primary: #3b82f6; 
             --primary-hover: #2563eb;
-            --success: #10b981; /* Verde esmeralda */
+            --success: #10b981; 
             --success-hover: #059669;
-            --warning: #f59e0b; /* Ámbar naranja */
+            --warning: #f59e0b; 
             --warning-hover: #d97706;
-            --danger: #ef4444; /* Rojo coral */
+            --danger: #ef4444; 
             --danger-hover: #dc2626;
             --borde: #e5e7eb;
         }
@@ -30,7 +30,7 @@
             color: var(--texto-dark);
         }
 
-        /* Barra de Navegación superior */
+        
         header {
             background-color: #1e293b;
             color: white;
@@ -57,7 +57,7 @@
             border-radius: 12px;
         }
 
-        /* Contenedor Principal en Grid Flexible */
+        
         .container {
             max-width: 1400px;
             margin: 30px auto;
@@ -67,7 +67,7 @@
             gap: 25px;
         }
 
-        /* Tarjetas Estilo Dashboard */
+        
         .column {
             background: var(--bg-card);
             border-radius: 12px;
@@ -100,7 +100,7 @@
             border-top: 1px dashed var(--borde);
         }
 
-        /* Inputs y Selects Estilizados */
+        
         label {
             display: block;
             font-size: 0.85rem;
@@ -129,7 +129,7 @@
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
 
-        /* Botones Amigables */
+       
         button {
             width: 100%;
             padding: 11px;
@@ -154,7 +154,7 @@
         .btn-red { background-color: var(--danger); color: white; }
         .btn-red:hover { background-color: var(--danger-hover); }
 
-        /* Estilo de Tablas Modernas */
+        
         .table-container {
             overflow-x: auto;
             margin-top: 15px;
@@ -192,7 +192,7 @@
             background-color: #f8fafc;
         }
 
-        /* Botones miniatura dentro de las tablas */
+        
         .btn-group {
             display: flex;
             gap: 4px;
@@ -214,7 +214,7 @@
             color: white;
         }
 
-        /* Alertas o textos vacíos */
+       
         .nulo {
             color: #9ca3af;
             font-style: italic;
@@ -375,7 +375,7 @@
         cargarMateriales();
     }
 
-    // FIX: Validación de stock negativo integrada aquí
+    
     async function ajustarStock(id, ajuste) {
         const material = materialesGlobal.find(m => m.id === id);
         

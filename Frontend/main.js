@@ -1,12 +1,12 @@
 const urlAPI = 'http://localhost:5000/api/materiales';
 
-// Función para pedir los datos a Python y dibujarlos en la tabla
+
 async function cargarInventario() {
     const respuesta = await fetch(urlAPI);
     const materiales = await respuesta.json();
     
     const tabla = document.getElementById('lista-materiales');
-    tabla.innerHTML = ''; // Limpiar la tabla antes de llenarla
+    tabla.innerHTML = ''; 
 
     materiales.forEach(mat => {
         tabla.innerHTML += `
@@ -20,7 +20,7 @@ async function cargarInventario() {
     });
 }
 
-// Función para enviar los datos de los inputs a Python
+
 async function guardarMaterial() {
     const nombre = document.getElementById('nombre').value;
     const cantidad = document.getElementById('cantidad').value;
@@ -39,13 +39,11 @@ async function guardarMaterial() {
         body: JSON.stringify(nuevoMaterial)
     });
 
-    // Limpiar los campos
+    
     document.getElementById('nombre').value = '';
     document.getElementById('cantidad').value = '';
 
-    // Recargar la tabla
     cargarInventario();
 }
 
-// Cargar el inventario automáticamente cuando se abre la página
 cargarInventario();
